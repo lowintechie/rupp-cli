@@ -7,7 +7,7 @@ NC='\033[0m' # No Color
 
 # Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SOURCES_DIR="$SCRIPT_DIR/rpm/SOURCES"
+SOURCES_DIR="$SCRIPT_DIR/rpm/SOURCES/lib"
 SPEC_FILE="$SCRIPT_DIR/rpm/SPECS/rupp-cli.spec"
 
 # Check if running in the correct directory with rupp-cli.sh present
@@ -28,15 +28,19 @@ fi
 echo "Setting up RPM build environment..."
 mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
 
-# Copy all scripts and the lib/ folder to ~/rpmbuild/SOURCES
-echo "Copying scripts to ~/rpmbuild/SOURCES..."
-cp -r "$SOURCES_DIR"/* ~/rpmbuild/SOURCES/ || {
+# Debug: List files in rpm/SOURCES/lib before copying
+echo "Files in $SOURCES_DIR before copying:"
+ls -la "$SOURCES_DIR"
+
+# Copy all scripts from rpm/SOURCES/lib to ~/rpmbuild/SOURCES
+echo "Copying scripts from $SOURCES_DIR to ~/rpmbuild/SOURCES..."
+cp -rv "$SOURCES_DIR"/* ~/rpmbuild/SOURCES/ || {
     echo -e "${RED}Error: Failed to copy scripts to ~/rpmbuild/SOURCES.${NC}"
     exit 1
 }
 
 # Debug: List files in ~/rpmbuild/SOURCES to verify
-echo "Verifying files in ~/rpmbuild/SOURCES..."
+echo "Verifying files in ~/rpmbuild/SOURCES after copying..."
 ls -la ~/rpmbuild/SOURCES/ || {
     echo -e "${RED}Error: Could not list files in ~/rpmbuild/SOURCES.${NC}"
     exit 1
@@ -63,7 +67,6 @@ Source9:        selinux.sh
 Source10:       ssh.sh
 Source11:       status.sh
 Source12:       updates.sh
-Source13:       lib
 
 %description
 A CLI tool to manage various system configurations, including firewalld.
@@ -76,28 +79,27 @@ A CLI tool to manage various system configurations, including firewalld.
 
 %install
 # Create directories
-mkdir -p %{buildroot}/usr/share/rupp-cli
+mkdir -p %{buildroot}/usr/share/rupp-cli/lib
 mkdir -p %{buildroot}/usr/bin
-# Copy all scripts and lib/ folder
-install -m 755 %{SOURCE0} %{buildroot}/usr/share/rupp-cli/rupp-cli.sh
-install -m 755 %{SOURCE1} %{buildroot}/usr/share/rupp-cli/audit.sh
-install -m 755 %{SOURCE2} %{buildroot}/usr/share/rupp-cli/banner.sh
-install -m 755 %{SOURCE3} %{buildroot}/usr/share/rupp-cli/checks.sh
-install -m 755 %{SOURCE4} %{buildroot}/usr/share/rupp-cli/config.sh
-install -m 755 %{SOURCE5} %{buildroot}/usr/share/rupp-cli/firewall.sh
-install -m 755 %{SOURCE6} %{buildroot}/usr/share/rupp-cli/harden.sh
-install -m 755 %{SOURCE7} %{buildroot}/usr/share/rupp-cli/help.sh
-install -m 755 %{SOURCE8} %{buildroot}/usr/share/rupp-cli/ids.sh
-install -m 755 %{SOURCE9} %{buildroot}/usr/share/rupp-cli/selinux.sh
-install -m 755 %{SOURCE10} %{buildroot}/usr/share/rupp-cli/ssh.sh
-install -m 755 %{SOURCE11} %{buildroot}/usr/share/rupp-cli/status.sh
-install -m 755 %{SOURCE12} %{buildroot}/usr/share/rupp-cli/updates.sh
-cp -r %{SOURCE13} %{buildroot}/usr/share/rupp-cli/lib
+# Copy all scripts to /usr/share/rupp-cli/lib/
+install -m 755 %{SOURCE0} %{buildroot}/usr/share/rupp-cli/lib/rupp-cli.sh
+install -m 755 %{SOURCE1} %{buildroot}/usr/share/rupp-cli/lib/audit.sh
+install -m 755 %{SOURCE2} %{buildroot}/usr/share/rupp-cli/lib/banner.sh
+install -m 755 %{SOURCE3} %{buildroot}/usr/share/rupp-cli/lib/checks.sh
+install -m 755 %{SOURCE4} %{buildroot}/usr/share/rupp-cli/lib/config.sh
+install -m 755 %{SOURCE5} %{buildroot}/usr/share/rupp-cli/lib/firewall.sh
+install -m 755 %{SOURCE6} %{buildroot}/usr/share/rupp-cli/lib/harden.sh
+install -m 755 %{SOURCE7} %{buildroot}/usr/share/rupp-cli/lib/help.sh
+install -m 755 %{SOURCE8} %{buildroot}/usr/share/rupp-cli/lib/ids.sh
+install -m 755 %{SOURCE9} %{buildroot}/usr/share/rupp-cli/lib/selinux.sh
+install -m 755 %{SOURCE10} %{buildroot}/usr/share/rupp-cli/lib/ssh.sh
+install -m 755 %{SOURCE11} %{buildroot}/usr/share/rupp-cli/lib/status.sh
+install -m 755 %{SOURCE12} %{buildroot}/usr/share/rupp-cli/lib/updates.sh
 # Create symlink for rupp-cli
-ln -sf /usr/share/rupp-cli/rupp-cli.sh %{buildroot}/usr/bin/rupp-cli
+ln -sf /usr/share/rupp-cli/lib/rupp-cli.sh %{buildroot}/usr/bin/rupp-cli
 
 %files
-/usr/share/rupp-cli/*
+/usr/share/rupp-cli/lib/*
 /usr/bin/rupp-cli
 
 %changelog
