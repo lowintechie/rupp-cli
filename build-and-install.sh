@@ -70,8 +70,8 @@ A CLI tool to manage various system configurations, including firewalld.
 %install
 mkdir -p %{buildroot}/usr/share/rupp-cli
 mkdir -p %{buildroot}/usr/bin
-# Install all scripts and lib/ folder
-cp -r rupp-cli.sh audit.sh banner.sh checks.sh config.sh firewall.sh harden.sh help.sh ids.sh selinux.sh ssh.sh status.sh updates.sh lib %{buildroot}/usr/share/rupp-cli/
+# Install all scripts and lib/ folder from SOURCES
+cp -r %{SOURCE0} %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE7} %{SOURCE8} %{SOURCE9} %{SOURCE10} %{SOURCE11} %{SOURCE12} %{SOURCE13} %{buildroot}/usr/share/rupp-cli/
 # Create symlink for rupp-cli
 ln -sf /usr/share/rupp-cli/rupp-cli.sh %{buildroot}/usr/bin/rupp-cli
 # Set executable permissions
