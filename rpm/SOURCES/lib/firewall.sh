@@ -36,6 +36,19 @@ manage_firewall() {
                 return 1
             fi
             ;;
+        check-services)
+            if [ -z "$zone" ]; then
+                echo -e "${RED}Error: Zone not specified. Usage: rupp-cli firewall check-services ZONE${NC}"
+                return 1
+            fi
+            echo -e "${CYAN}Checking services in zone: $zone${NC}"
+            if firewall-cmd --zone="$zone" --list-services; then
+                echo -e "${GREEN}Services listed above${NC}"
+            else
+                echo -e "${RED}Error: Failed to list services for zone $zone${NC}"
+                return 1
+            fi
+            ;;
         add-rule)
             port=$2
             protocol=$3
@@ -95,7 +108,7 @@ manage_firewall() {
             fi
             ;;
         *)
-            echo -e "${RED}Error: Unknown firewall action. Available: status, create-zone, add-rule, remove-rule, add-service, remove-service${NC}"
+            echo -e "${RED}Error: Unknown firewall action. Available: status, create-zone, check-services, add-rule, remove-rule, add-service, remove-service${NC}"
             return 1
             ;;
     esac
