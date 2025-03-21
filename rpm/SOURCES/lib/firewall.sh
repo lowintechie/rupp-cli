@@ -1,9 +1,10 @@
 #!/bin/bash
+
 manage_firewall() {
     local action=$1
     local zone=$2
     local service=$3
-    local port protocol confirm
+    local port protocol
 
     # Check if firewalld is installed
     if ! command -v firewall-cmd &> /dev/null; then
@@ -17,30 +18,22 @@ manage_firewall() {
             if systemctl is-active firewalld &> /dev/null; then
                 firewall-cmd --list-all
             else
-                echo -e "${YELLOW}Firewall is not running${NC}"
-            fi
-            ;;
-        enable)
-            echo -e "${CYAN}Enabling firewall...${NC}"
-            if systemctl enable --now firewalld &> /dev/null; then
-                echo -e "${GREEN}Firewall enabled and started${NC}"
-            else
-                echo -e "${RED}Error: Failed to enable firewall${NC}"
+                echo -e "${RED}Firewall is not running${NC}"
                 return 1
             fi
             ;;
-        disable)
-            echo -e "${YELLOW}Warning: Disabling firewall reduces system security${NC}"
-            read -p "Are you sure you want to continue? (y/n): " confirm
-            if [[ "$confirm" =~ ^[yY]([eE][sS])?$ ]]; then
-                if systemctl disable --now firewalld &> /dev/null; then
-                    echo -e "${RED}Firewall disabled${NC}"
-                else
-                    echo -e "${RED}Error: Failed to disable firewall${NC}"
-                    return 1
-                fi
+        create-zone)
+            if [ -z "$zone" ]; then
+                echo -e "${RED}Error: Zone name not specified. Usage: rupp-cli firewall create-zone ZONE${NC}"
+                return 1
+            fi
+            echo -e "${CYAN}Creating new zone: $zone${NC}"
+            if firewall-cmd --permanent --new-zone="$zone" &> /dev/null; then
+                firewall-cmd --reload &> /dev/null
+                echo -e "${GREEN}Zone $zone created${NC}"
             else
-                echo -e "${GREEN}Operation cancelled${NC}"
+                echo -e "${RED}Error: Failed to create zone $zone (may already exist or invalid name)${NC}"
+                return 1
             fi
             ;;
         add-rule)
@@ -73,41 +66,6 @@ manage_firewall() {
                 return 1
             fi
             ;;
-        check-zone)
-            echo -e "${CYAN}Checking active firewall zones...${NC}"
-            if firewall-cmd --get-active-zones; then
-                echo -e "${GREEN}Active zones listed above${NC}"
-            else
-                echo -e "${RED}Error: No active zones or firewalld not running${NC}"
-                return 1
-            fi
-            ;;
-        check-services)
-            if [ -z "$zone" ]; then
-                echo -e "${RED}Error: Zone not specified. Usage: rupp-cli firewall check-services ZONE${NC}"
-                return 1
-            fi
-            echo -e "${CYAN}Checking services in zone: $zone${NC}"
-            if firewall-cmd --zone="$zone" --list-services; then
-                echo -e "${GREEN}Services listed above${NC}"
-            else
-                echo -e "${RED}Error: Failed to list services for zone $zone${NC}"
-                return 1
-            fi
-            ;;
-        change-zone)
-            if [ -z "$zone" ]; then
-                echo -e "${RED}Error: Zone not specified. Usage: rupp-cli firewall change-zone ZONE${NC}"
-                return 1
-            fi
-            echo -e "${CYAN}Changing default zone to: $zone${NC}"
-            if firewall-cmd --set-default-zone="$zone" &> /dev/null; then
-                echo -e "${GREEN}Default zone changed to $zone${NC}"
-            else
-                echo -e "${RED}Error: Failed to change default zone to $zone${NC}"
-                return 1
-            fi
-            ;;
         add-service)
             if [ -z "$zone" ] || [ -z "$service" ]; then
                 echo -e "${RED}Error: Missing parameters. Usage: rupp-cli firewall add-service ZONE SERVICE${NC}"
@@ -137,7 +95,7 @@ manage_firewall() {
             fi
             ;;
         *)
-            echo -e "${RED}Error: Unknown firewall action. Use 'rupp-cli help firewall' for available commands${NC}"
+            echo -e "${RED}Error: Unknown firewall action. Available: status, create-zone, add-rule, remove-rule, add-service, remove-service${NC}"
             return 1
             ;;
     esac
