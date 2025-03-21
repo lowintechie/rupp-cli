@@ -5,95 +5,61 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
-# Check if running in the correct directory
-if [ ! -d "rpm/SOURCES" ] || [ ! -f "rpm/SOURCES/rupp-cli.sh" ]; then
-    echo -e "${RED}Error: Must run this script from the rupp-cli directory with rpm/SOURCES/rupp-cli.sh present.${NC}"
+# Script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SOURCE_SCRIPT="$SCRIPT_DIR/rpm/SOURCES/rupp-cli.sh"
+INSTALL_PATH="/usr/local/bin/rupp-cli"
+
+# Check if running in the correct directory with rupp-cli.sh present
+if [ ! -f "$SOURCE_SCRIPT" ]; then
+    echo -e "${RED}Error: rupp-cli.sh not found in $SCRIPT_DIR/rpm/SOURCES/.${NC}"
+    echo "Please ensure the script is in the correct location and try again."
     exit 1
 fi
 
 # Check for sudo privileges (needed for install)
 if [ "$EUID" -ne 0 ]; then
-    echo -e "${RED}This script requires sudo privileges for RPM installation. Please run with sudo.${NC}"
+    echo -e "${RED}This script requires sudo privileges to install to $INSTALL_PATH.${NC}"
+    echo "Please run with sudo (e.g., 'sudo ./build-and-install.sh')."
     exit 1
 fi
 
-# Install rpm-build if not present
-if ! command -v rpmbuild &> /dev/null; then
-    echo "Installing rpm-build..."
-    yum install -y rpm-build || {
-        echo -e "${RED}Error: Failed to install rpm-build. Please install it manually.${NC}"
+# Check if firewalld is installed (optional, but since it’s a firewalld tool)
+if ! command -v firewall-cmd &> /dev/null; then
+    echo -e "${RED}Warning: firewalld is not installed. rupp-cli may not work as expected.${NC}"
+    read -p "Continue anyway? (y/n): " confirm
+    if [[ ! "$confirm" =~ ^[yY]$ ]]; then
+        echo -e "${GREEN}Installation cancelled.${NC}"
+        exit 0
+    fi
+fi
+
+# Install the script
+echo "Installing rupp-cli to $INSTALL_PATH..."
+cp "$SOURCE_SCRIPT" "$INSTALL_PATH" || {
+    echo -e "${RED}Error: Failed to copy rupp-cli.sh to $INSTALL_PATH.${NC}"
+    exit 1
+}
+
+# Set executable permissions
+chmod +x "$INSTALL_PATH" || {
+    echo -e "${RED}Error: Failed to set executable permissions on $INSTALL_PATH.${NC}"
+    exit 1
+}
+
+# Rename to remove .sh extension for cleaner CLI usage
+if [ "${INSTALL_PATH: -3}" == ".sh" ]; then
+    mv "$INSTALL_PATH" "${INSTALL_PATH%.sh}" || {
+        echo -e "${RED}Error: Failed to rename the script.${NC}"
         exit 1
     }
+    INSTALL_PATH="${INSTALL_PATH%.sh}"
 fi
 
-# Set up RPM build directories
-echo "Setting up RPM build environment..."
-mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
-
-# Copy the script to ~/rpmbuild/SOURCES
-cp rpm/SOURCES/rupp-cli.sh ~/rpmbuild/SOURCES/ || {
-    echo -e "${RED}Error: Failed to copy rupp-cli.sh to ~/rpmbuild/SOURCES.${NC}"
-    exit 1
-}
-
-# Create the spec file if it doesn’t exist
-SPEC_FILE="rpm/SPECS/rupp-cli.spec"
-if [ ! -f "$SPEC_FILE" ]; then
-    echo "Creating rupp-cli.spec..."
-    cat > "$SPEC_FILE" << 'EOF'
-Name:           rupp-cli
-Version:        1.0
-Release:        1
-Summary:        A CLI tool to manage firewalld
-License:        GPL
-Source0:        rupp-cli.sh
-
-%description
-A simple CLI tool to manage firewalld rules, zones, and services.
-
-%prep
-# No prep needed for a single script
-
-%build
-# No build step for a Bash script
-
-%install
-mkdir -p %{buildroot}/usr/bin
-install -m 755 rupp-cli.sh %{buildroot}/usr/bin/rupp-cli
-
-%files
-/usr/bin/rupp-cli
-
-%changelog
-* Fri Mar 21 2025 Your Name <you@example.com> - 1.0-1
-- Initial release
-EOF
-fi
-
-# Copy spec file to ~/rpmbuild/SPECS
-cp "$SPEC_FILE" ~/rpmbuild/SPECS/ || {
-    echo -e "${RED}Error: Failed to copy rupp-cli.spec to ~/rpmbuild/SPECS.${NC}"
-    exit 1
-}
-
-# Build the RPM
-echo "Building RPM package..."
-rpmbuild -ba ~/rpmbuild/SPECS/rupp-cli.spec || {
-    echo -e "${RED}Error: Failed to build RPM package.${NC}"
-    exit 1
-}
-
-# Find and install the RPM
-RPM_FILE=$(find ~/rpmbuild/RPMS -name "rupp-cli-1.0-1*.rpm" | head -n 1)
-if [ -z "$RPM_FILE" ]; then
-    echo -e "${RED}Error: RPM file not found.${NC}"
+# Verify installation
+if command -v rupp-cli &> /dev/null; then
+    echo -e "${GREEN}Installation complete! You can now use 'rupp-cli' (e.g., 'rupp-cli status').${NC}"
+else
+    echo -e "${RED}Error: Installation failed. rupp-cli is not in your PATH.${NC}"
     exit 1
 fi
-
-echo "Installing RPM package..."
-rpm -ivh "$RPM_FILE" || {
-    echo -e "${RED}Error: Failed to install RPM package.${NC}"
-    exit 1
-}
-
-echo -e "${GREEN}Installation complete! You can now use 'rupp-cli' (e.g., 'rupp-cli status').${NC}"
