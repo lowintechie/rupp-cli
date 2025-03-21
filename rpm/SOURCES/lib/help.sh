@@ -41,6 +41,7 @@ show_help() {
                 echo -e "${BLUE}║ ${GREEN}  disable${NC}            - Disable firewall                 ${BLUE}║${NC}"
                 echo -e "${BLUE}║ ${GREEN}  add-rule PORT PROTO${NC} - Add firewall rule               ${BLUE}║${NC}"
                 echo -e "${BLUE}║ ${GREEN}  remove-rule PORT PROTO${NC} - Remove firewall rule         ${BLUE}║${NC}"
+                echo -e "${BLUE}║ ${GREEN}  create-zone${NC}         - Create new zones                ${BLUE}║${NC}"
                 echo -e "${BLUE}║ ${GREEN}  check-zone${NC}         - Show active zones                ${BLUE}║${NC}"
                 echo -e "${BLUE}║ ${GREEN}  check-services ZONE${NC} - List services in zone           ${BLUE}║${NC}"
                 echo -e "${BLUE}║ ${GREEN}  change-zone ZONE${NC}   - Change default zone              ${BLUE}║${NC}"
