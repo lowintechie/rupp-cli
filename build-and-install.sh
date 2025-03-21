@@ -7,13 +7,20 @@ NC='\033[0m' # No Color
 
 # Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SOURCES_DIR="$SCRIPT_DIR/rpm/SOURCES/lib"
+SOURCES_DIR="$SCRIPT_DIR/rpm/SOURCES"
+LIB_DIR="$SOURCES_DIR/lib"
 SPEC_FILE="$SCRIPT_DIR/rpm/SPECS/rupp-cli.spec"
 
 # Check if running in the correct directory with rupp-cli.sh present
 if [ ! -d "$SOURCES_DIR" ] || [ ! -f "$SOURCES_DIR/rupp-cli.sh" ]; then
     echo -e "${RED}Error: rupp-cli.sh not found in $SOURCES_DIR/.${NC}"
     echo "Please ensure the script is in the correct location and try again."
+    exit 1
+fi
+
+# Check if lib/ directory exists
+if [ ! -d "$LIB_DIR" ]; then
+    echo -e "${RED}Error: lib/ directory not found in $SOURCES_DIR/.${NC}"
     exit 1
 fi
 
@@ -28,14 +35,25 @@ fi
 echo "Setting up RPM build environment..."
 mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
 
-# Debug: List files in rpm/SOURCES/lib before copying
+# Debug: List files in rpm/SOURCES before copying
 echo "Files in $SOURCES_DIR before copying:"
 ls -la "$SOURCES_DIR"
 
-# Copy all scripts from rpm/SOURCES/lib to ~/rpmbuild/SOURCES
-echo "Copying scripts from $SOURCES_DIR to ~/rpmbuild/SOURCES..."
-cp -rv "$SOURCES_DIR"/* ~/rpmbuild/SOURCES/ || {
-    echo -e "${RED}Error: Failed to copy scripts to ~/rpmbuild/SOURCES.${NC}"
+# Debug: List files in rpm/SOURCES/lib before copying
+echo "Files in $LIB_DIR before copying:"
+ls -la "$LIB_DIR"
+
+# Copy rupp-cli.sh from rpm/SOURCES/ to ~/rpmbuild/SOURCES/
+echo "Copying rupp-cli.sh to ~/rpmbuild/SOURCES..."
+cp -v "$SOURCES_DIR/rupp-cli.sh" ~/rpmbuild/SOURCES/ || {
+    echo -e "${RED}Error: Failed to copy rupp-cli.sh to ~/rpmbuild/SOURCES.${NC}"
+    exit 1
+}
+
+# Copy all scripts from rpm/SOURCES/lib/ to ~/rpmbuild/SOURCES/
+echo "Copying scripts from $LIB_DIR to ~/rpmbuild/SOURCES..."
+cp -rv "$LIB_DIR"/* ~/rpmbuild/SOURCES/ || {
+    echo -e "${RED}Error: Failed to copy scripts from $LIB_DIR to ~/rpmbuild/SOURCES.${NC}"
     exit 1
 }
 
@@ -79,10 +97,12 @@ A CLI tool to manage various system configurations, including firewalld.
 
 %install
 # Create directories
+mkdir -p %{buildroot}/usr/share/rupp-cli
 mkdir -p %{buildroot}/usr/share/rupp-cli/lib
 mkdir -p %{buildroot}/usr/bin
-# Copy all scripts to /usr/share/rupp-cli/lib/
-install -m 755 %{SOURCE0} %{buildroot}/usr/share/rupp-cli/lib/rupp-cli.sh
+# Copy rupp-cli.sh to /usr/share/rupp-cli/
+install -m 755 %{SOURCE0} %{buildroot}/usr/share/rupp-cli/rupp-cli.sh
+# Copy other scripts to /usr/share/rupp-cli/lib/
 install -m 755 %{SOURCE1} %{buildroot}/usr/share/rupp-cli/lib/audit.sh
 install -m 755 %{SOURCE2} %{buildroot}/usr/share/rupp-cli/lib/banner.sh
 install -m 755 %{SOURCE3} %{buildroot}/usr/share/rupp-cli/lib/checks.sh
@@ -96,9 +116,10 @@ install -m 755 %{SOURCE10} %{buildroot}/usr/share/rupp-cli/lib/ssh.sh
 install -m 755 %{SOURCE11} %{buildroot}/usr/share/rupp-cli/lib/status.sh
 install -m 755 %{SOURCE12} %{buildroot}/usr/share/rupp-cli/lib/updates.sh
 # Create symlink for rupp-cli
-ln -sf /usr/share/rupp-cli/lib/rupp-cli.sh %{buildroot}/usr/bin/rupp-cli
+ln -sf /usr/share/rupp-cli/rupp-cli.sh %{buildroot}/usr/bin/rupp-cli
 
 %files
+/usr/share/rupp-cli/*
 /usr/share/rupp-cli/lib/*
 /usr/bin/rupp-cli
 
