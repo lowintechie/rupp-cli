@@ -2,7 +2,7 @@
 
 # rupp-cli - Main script for Network Security CLI Tool
 
-LIB_DIR="/usr/lib/rupp-cli"
+LIB_DIR="$(dirname "$0")/lib"
 
 source "$LIB_DIR/config.sh"
 source "$LIB_DIR/banner.sh"
