@@ -35,6 +35,13 @@ cp -r "$SOURCES_DIR"/* ~/rpmbuild/SOURCES/ || {
     exit 1
 }
 
+# Debug: List files in ~/rpmbuild/SOURCES to verify
+echo "Verifying files in ~/rpmbuild/SOURCES..."
+ls -la ~/rpmbuild/SOURCES/ || {
+    echo -e "${RED}Error: Could not list files in ~/rpmbuild/SOURCES.${NC}"
+    exit 1
+}
+
 # Create the spec file
 echo "Creating rupp-cli.spec..."
 cat > "$SPEC_FILE" << 'EOF'
