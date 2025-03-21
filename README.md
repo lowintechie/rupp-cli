@@ -13,34 +13,22 @@ Rupp-Cli is a comprehensive security management tool for Linux systems.
 
 ## Installation
 
-### From RPM
-
-```bash
-sudo rpm -ivh rupp-cli-1.0.0-1.el8.noarch.rpm
-```
-
-### Build from Source
-
 1. Clone the repository:
    ```bash
    git clone https://github.com/yourusername/rupp-cli.git
    cd rupp-cli
    ```
 
-2. Build the RPM package:
+2. Build and Install the RPM package:
    ```bash
-   rpmbuild -ba SPECS/rupp.spec
-   ```
-
-3. Install the package:
-   ```bash
-   sudo rpm -ivh RPMS/noarch/rupp-cli-1.0.0-1.el8.noarch.rpm
+   chmod +x build-and-install.sh
+   sudo ./build-and-install.sh
    ```
 
 ## Usage
 
 ```bash
-rupp [COMMAND] [OPTIONS]
+rupp-cli [COMMAND] [OPTIONS]
 ```
 
 ### Available Commands
@@ -59,16 +47,16 @@ rupp [COMMAND] [OPTIONS]
 
 ```bash
 # Show security status
-rupp status
+rupp-cil status
 
 # Enable firewall
-rupp firewall enable
+rupp-cli firewall enable
 
 # Apply medium hardening profile
-rupp harden medium
+rupp-cli harden medium
 
 # Get help for SSH hardening options
-rupp help ssh
+rupp-cli help ssh
 ```
 
 ## Requirements
