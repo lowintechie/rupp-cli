@@ -68,14 +68,26 @@ A CLI tool to manage various system configurations, including firewalld.
 # No build step for Bash scripts
 
 %install
+# Create directories
 mkdir -p %{buildroot}/usr/share/rupp-cli
 mkdir -p %{buildroot}/usr/bin
-# Install all scripts and lib/ folder from SOURCES
-cp -r %{SOURCE0} %{SOURCE1} %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} %{SOURCE7} %{SOURCE8} %{SOURCE9} %{SOURCE10} %{SOURCE11} %{SOURCE12} %{SOURCE13} %{buildroot}/usr/share/rupp-cli/
+# Copy all scripts and lib/ folder
+install -m 755 %{SOURCE0} %{buildroot}/usr/share/rupp-cli/rupp-cli.sh
+install -m 755 %{SOURCE1} %{buildroot}/usr/share/rupp-cli/audit.sh
+install -m 755 %{SOURCE2} %{buildroot}/usr/share/rupp-cli/banner.sh
+install -m 755 %{SOURCE3} %{buildroot}/usr/share/rupp-cli/checks.sh
+install -m 755 %{SOURCE4} %{buildroot}/usr/share/rupp-cli/config.sh
+install -m 755 %{SOURCE5} %{buildroot}/usr/share/rupp-cli/firewall.sh
+install -m 755 %{SOURCE6} %{buildroot}/usr/share/rupp-cli/harden.sh
+install -m 755 %{SOURCE7} %{buildroot}/usr/share/rupp-cli/help.sh
+install -m 755 %{SOURCE8} %{buildroot}/usr/share/rupp-cli/ids.sh
+install -m 755 %{SOURCE9} %{buildroot}/usr/share/rupp-cli/selinux.sh
+install -m 755 %{SOURCE10} %{buildroot}/usr/share/rupp-cli/ssh.sh
+install -m 755 %{SOURCE11} %{buildroot}/usr/share/rupp-cli/status.sh
+install -m 755 %{SOURCE12} %{buildroot}/usr/share/rupp-cli/updates.sh
+cp -r %{SOURCE13} %{buildroot}/usr/share/rupp-cli/lib
 # Create symlink for rupp-cli
 ln -sf /usr/share/rupp-cli/rupp-cli.sh %{buildroot}/usr/bin/rupp-cli
-# Set executable permissions
-chmod +x %{buildroot}/usr/share/rupp-cli/*.sh
 
 %files
 /usr/share/rupp-cli/*
