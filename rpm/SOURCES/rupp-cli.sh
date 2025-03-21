@@ -2,7 +2,7 @@
 
 # rupp-cli - Main script for Network Security CLI Tool
 
-
+# Use absolute path for installed location
 LIB_DIR="/usr/share/rupp-cli"
 
 source "$LIB_DIR/config.sh"
