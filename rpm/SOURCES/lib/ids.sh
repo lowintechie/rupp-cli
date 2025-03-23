@@ -26,31 +26,37 @@ manage_ids() {
         jail-status)
             local jail=$2
             if [ -z "$jail" ]; then
-                echo -e "${CYAN}All Jail Statuses:${NC}"
+                echo -e "${CYAN}Active Jail Statuses:${NC}"
                 fail2ban-client status
             else
                 echo -e "${CYAN}Jail Status for $jail:${NC}"
-                fail2ban-client status $jail
+                fail2ban-client status "$jail"
             fi
             ;;
-        protect-ssh)
-            echo -e "${CYAN}Setting up SSH protection with fail2ban...${NC}"
-            systemctl enable --now fail2ban
-            cat > /etc/fail2ban/jail.d/sshd.local << EOF
-[sshd]
-enabled = true
-port = ssh
-filter = sshd
-logpath = /var/log/secure
-maxretry = 3
-bantime = 3600
-findtime = 600
-EOF
-            fail2ban-client reload
-            echo -e "${GREEN}SSH protection with fail2ban enabled${NC}"
+        ban-ip)
+            local ip=$2
+            local jail=$3
+            if [ -z "$ip" ] || [ -z "$jail" ]; then
+                echo -e "${RED}Error: Please provide an IP and jail name (e.g., sshd)${NC}"
+                return 1
+            fi
+            echo -e "${CYAN}Banning IP $ip in jail $jail...${NC}"
+            fail2ban-client set "$jail" banip "$ip"
+            echo -e "${GREEN}IP $ip banned in $jail${NC}"
+            ;;
+        unban-ip)
+            local ip=$2
+            local jail=$3
+            if [ -z "$ip" ] || [ -z "$jail" ]; then
+                echo -e "${RED}Error: Please provide an IP and jail name (e.g., sshd)${NC}"
+                return 1
+            fi
+            echo -e "${CYAN}Unbanning IP $ip from jail $jail...${NC}"
+            fail2ban-client set "$jail" unbanip "$ip"
+            echo -e "${GREEN}IP $ip unbanned from $jail${NC}"
             ;;
         *)
-            echo -e "${RED}Error: Unknown intrusion detection action. Use 'rupp-cli help ids' for available commands${NC}"
+            echo -e "${RED}Error: Unknown action. Available commands: status, enable, disable, jail-status, ban-ip, unban-ip${NC}"
             return 1
             ;;
     esac
