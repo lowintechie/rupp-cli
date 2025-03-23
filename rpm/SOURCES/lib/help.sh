@@ -100,12 +100,16 @@ show_help() {
                 echo -e "${BLUE}║ ${GREEN}  enable${NC}       - Enable fail2ban                       ${BLUE}║${NC}"
                 echo -e "${BLUE}║ ${GREEN}  disable${NC}      - Disable fail2ban                      ${BLUE}║${NC}"
                 echo -e "${BLUE}║ ${GREEN}  jail-status [JAIL]${NC} - Show jail status                ${BLUE}║${NC}"
-                echo -e "${BLUE}║ ${GREEN}  protect-ssh${NC}  - Configure SSH protection              ${BLUE}║${NC}"
+                echo -e "${BLUE}║ ${GREEN}  ban-ip IP JAIL${NC} - Ban an IP in a specific jail      ${BLUE}║${NC}"
+                echo -e "${BLUE}║ ${GREEN}  unban-ip IP JAIL${NC} - Unban an IP from a jail         ${BLUE}║${NC}"
                 echo -e "${BLUE}║                                                        ${BLUE}║${NC}"
                 echo -e "${BLUE}║ ${YELLOW}Examples:${NC}                                              ${BLUE}║${NC}"
                 echo -e "${BLUE}║ ${GREEN}  rupp-cli ids status${NC}                             ${BLUE}║${NC}"
+                echo -e "${BLUE}║ ${GREEN}  rupp-cli ids enable${NC}                             ${BLUE}║${NC}"
+                echo -e "${BLUE}║ ${GREEN}  rupp-cli ids disable${NC}                            ${BLUE}║${NC}"
                 echo -e "${BLUE}║ ${GREEN}  rupp-cli ids jail-status sshd${NC}                   ${BLUE}║${NC}"
-                echo -e "${BLUE}║ ${GREEN}  rupp-cli ids protect-ssh${NC}                        ${BLUE}║${NC}"
+                echo -e "${BLUE}║ ${GREEN}  rupp-cli ids ban-ip 192.168.1.100 sshd${NC}          ${BLUE}║${NC}"
+                echo -e "${BLUE}║ ${GREEN}  rupp-cli ids unban-ip 192.168.1.100 sshd${NC}        ${BLUE}║${NC}"
                 echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}"
                 ;;
             updates)
