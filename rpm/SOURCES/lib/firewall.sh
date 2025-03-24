@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 manage_firewall() {
     local action=$1
     local zone=$2
@@ -116,7 +117,7 @@ manage_firewall() {
             if firewall-cmd --get-active-zones | grep -q "$zone"; then
                 echo -e "${GREEN}Zone $zone is active${NC}"
                 firewall-cmd --zone="$zone" --list-all
-            elif firewall-cmd --get-all-zones | grep -q "$zone"; then
+            elif ls /etc/firewalld/zones/ | grep -q "^${zone}.xml$"; then
                 echo -e "${YELLOW}Zone $zone exists but is not active${NC}"
                 firewall-cmd --zone="$zone" --list-all
             else
@@ -129,13 +130,19 @@ manage_firewall() {
             echo -e "${GREEN}Active zones:${NC}"
             firewall-cmd --get-active-zones || echo -e "${YELLOW}No active zones${NC}"
             echo -e "${GREEN}All configured zones:${NC}"
-            firewall-cmd --get-all-zones | tr ' ' '\n' | while read -r z; do
-                if firewall-cmd --get-active-zones | grep -q "$z"; then
-                    echo -e "$z ${GREEN}(active)${NC}"
-                else
-                    echo -e "$z"
-                fi
-            done
+            if ls /etc/firewalld/zones/*.xml &> /dev/null; then
+                for zone_file in /etc/firewalld/zones/*.xml; do
+                    zone_name=$(basename "$zone_file" .xml)
+                    if firewall-cmd --get-active-zones | grep -q "$zone_name"; then
+                        echo -e "$zone_name ${GREEN}(active)${NC}"
+                    else
+                        echo -e "$zone_name"
+                    fi
+                done
+            else
+                echo -e "${YELLOW}No custom zones configured${NC}"
+            fi
+            echo -e "${CYAN}Default zone:${NC} $(firewall-cmd --get-default-zone)"
             ;;
         *)
             echo -e "${RED}Error: Unknown firewall action. Available: status, create-zone, check-services, add-rule, remove-rule, add-service, remove-service, check-zone, list-zones${NC}"
