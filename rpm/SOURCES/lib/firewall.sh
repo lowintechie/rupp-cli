@@ -107,8 +107,38 @@ manage_firewall() {
                 return 1
             fi
             ;;
+        check-zone)
+            if [ -z "$zone" ]; then
+                echo -e "${RED}Error: Zone not specified. Usage: rupp-cli firewall check-zone ZONE${NC}"
+                return 1
+            fi
+            echo -e "${CYAN}Checking zone: $zone${NC}"
+            if firewall-cmd --get-active-zones | grep -q "$zone"; then
+                echo -e "${GREEN}Zone $zone is active${NC}"
+                firewall-cmd --zone="$zone" --list-all
+            elif firewall-cmd --get-all-zones | grep -q "$zone"; then
+                echo -e "${YELLOW}Zone $zone exists but is not active${NC}"
+                firewall-cmd --zone="$zone" --list-all
+            else
+                echo -e "${RED}Error: Zone $zone does not exist${NC}"
+                return 1
+            fi
+            ;;
+        list-zones)
+            echo -e "${CYAN}Listing all available zones:${NC}"
+            echo -e "${GREEN}Active zones:${NC}"
+            firewall-cmd --get-active-zones || echo -e "${YELLOW}No active zones${NC}"
+            echo -e "${GREEN}All configured zones:${NC}"
+            firewall-cmd --get-all-zones | tr ' ' '\n' | while read -r z; do
+                if firewall-cmd --get-active-zones | grep -q "$z"; then
+                    echo -e "$z ${GREEN}(active)${NC}"
+                else
+                    echo -e "$z"
+                fi
+            done
+            ;;
         *)
-            echo -e "${RED}Error: Unknown firewall action. Available: status, create-zone, check-services, add-rule, remove-rule, add-service, remove-service${NC}"
+            echo -e "${RED}Error: Unknown firewall action. Available: status, create-zone, check-services, add-rule, remove-rule, add-service, remove-service, check-zone, list-zones${NC}"
             return 1
             ;;
     esac
