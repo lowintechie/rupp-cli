@@ -31,6 +31,21 @@ harden_ssh() {
             fi
             ;;
 
+        enable-root)
+            echo -e "${CYAN}Enabling root login with password authentication...${NC}"
+            cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak.$(date +%Y%m%d_%H%M%S)
+            sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+            sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+            if systemctl restart sshd >/dev/null 2>&1; then
+                echo -e "${GREEN}Root login and password authentication enabled${NC}"
+                echo -e "${YELLOW}Warning: This reduces security - use with caution${NC}"
+            else
+                echo -e "${RED}Error: Failed to restart SSH service${NC}"
+                cp /etc/ssh/sshd_config.bak.$(date +%Y%m%d_%H%M%S) /etc/ssh/sshd_config
+                return 1
+            fi
+            ;;
+
         change-port)
             local port=$2
             if [ -z "$port" ]; then
@@ -73,7 +88,7 @@ harden_ssh() {
             ;;
             
         *)
-            echo -e "${YELLOW}Usage: harden_ssh [status|disable-root|change-port PORT]${NC}"
+            echo -e "${YELLOW}Usage: harden_ssh [status|disable-root|enable-root|change-port PORT]${NC}"
             return 1
             ;;
     esac
